@@ -1,0 +1,12 @@
+version: 1
+project:
+  name: OnlineStore.API
+  primaryLanguage: c#
+  projectRoots:
+    - .
+tracker:
+  type: none
+naming:
+  includeTrackerId: false
+  globalSequence: true
+agents: []
