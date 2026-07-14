@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OnlineStore.API.Data;
 using OnlineStore.API.Dtos;
 using OnlineStore.API.Entities;
+using OnlineStore.API.Services;
 
 namespace OnlineStore.API.Controllers;
 
@@ -11,10 +12,12 @@ namespace OnlineStore.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly ITokenService _tokenService;
 
-    public AuthController(AppDbContext db)
+    public AuthController(AppDbContext db, ITokenService tokenService)
     {
         _db = db;
+        _tokenService = tokenService;
     }
 
     [HttpPost("register")]
@@ -45,6 +48,29 @@ public class AuthController : ControllerBase
         {
             // Unique-index violation from a concurrent registration with the same email.
             return Conflict(new { message = "Email already exists" });
+        }
+        catch
+        {
+            return StatusCode(500, new { message = "Something went wrong" });
+        }
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login(LoginRequest request)
+    {
+        try
+        {
+            var user = await _db.Users.SingleOrDefaultAsync(u => u.Email == request.Email);
+
+            // Same generic 401 whether the email is unknown OR the password is wrong.
+            if (user is null ||
+                !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
+            {
+                return Unauthorized(new { message = "Invalid email or password" });
+            }
+
+            var token = _tokenService.CreateToken(user);
+            return Ok(new AuthResponse(token, user.Name, user.Email, user.Role));
         }
         catch
         {
