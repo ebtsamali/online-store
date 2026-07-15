@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OnlineStore.API.Data;
@@ -76,5 +78,18 @@ public class AuthController : ControllerBase
         {
             return StatusCode(500, new { message = "Something went wrong" });
         }
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    public IActionResult Me()
+    {
+        // NOTE: the JWT handler maps inbound "sub"->NameIdentifier and "email"->Email
+        // by default, so read them via ClaimTypes (NOT JwtRegisteredClaimNames).
+        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var email = User.FindFirstValue(ClaimTypes.Email);
+        var role = User.FindFirstValue(ClaimTypes.Role);
+
+        return Ok(new { id, email, role });
     }
 }

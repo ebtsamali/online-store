@@ -5,3 +5,4 @@ One row per feature folder under `.squad/plans/`. `NN` continues as a global exe
 | Feature | Overview | NN range |
 |---------|----------|----------|
 | auth | [auth/00-overview.md](auth/00-overview.md) | 01–02 |
+| middleware | [middleware/00-overview.md](middleware/00-overview.md) | 03 |
