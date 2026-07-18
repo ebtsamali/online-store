@@ -9,4 +9,10 @@ public class Product
     public int Stock { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public int CategoryId { get; set; }
+    public int BrandId { get; set; }
+
+    public Category? Category { get; set; }
+    public Brand? Brand { get; set; }
 }
