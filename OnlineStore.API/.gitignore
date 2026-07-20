@@ -6,3 +6,7 @@
 .squad/.last-copy-prompt.md
 .squad/runs/
 # End squad-kit block
+
+# Uploaded product images (keep the folder, ignore its contents)
+wwwroot/images/products/*
+!wwwroot/images/products/.gitkeep

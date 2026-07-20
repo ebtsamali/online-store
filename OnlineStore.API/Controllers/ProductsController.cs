@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OnlineStore.API.Data;
 using OnlineStore.API.Dtos;
 using OnlineStore.API.Entities;
+using OnlineStore.API.Services;
 
 namespace OnlineStore.API.Controllers;
 
@@ -13,10 +14,12 @@ namespace OnlineStore.API.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly AppDbContext _db;
+    private readonly IImageStorageService _images;
 
-    public ProductsController(AppDbContext db)
+    public ProductsController(AppDbContext db, IImageStorageService images)
     {
         _db = db;
+        _images = images;
     }
 
     [AllowAnonymous]
@@ -50,7 +53,7 @@ public class ProductsController : ControllerBase
                 .OrderByDescending(p => p.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(p => new ProductListItemDto(p.Id, p.Name, p.Price, p.Stock, p.IsActive))
+                .Select(p => new ProductListItemDto(p.Id, p.Name, p.Price, p.Stock, p.IsActive, p.ImageUrl))
                 .ToListAsync();
 
             return Ok(new { items, page, pageSize, total });
@@ -88,10 +91,14 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateProductRequest request)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Create([FromForm] CreateProductFormRequest request)
     {
         try
         {
+            try { _images.Validate(request.Image); }
+            catch (InvalidImageException ex) { return BadRequest(new { message = ex.Message }); }
+
             if (!await _db.Categories.AnyAsync(c => c.Id == request.CategoryId))
             {
                 return BadRequest(new { message = "Category not found" });
@@ -102,6 +109,9 @@ public class ProductsController : ControllerBase
                 return BadRequest(new { message = "Brand not found" });
             }
 
+            // Write the file only after all other validation passes.
+            var imageUrl = await _images.SaveAsync(request.Image);
+
             // Server owns IsActive and CreatedAt (entity defaults) — never trust the client.
             var product = new Product
             {
@@ -110,11 +120,20 @@ public class ProductsController : ControllerBase
                 Price = request.Price,
                 Stock = request.Stock,
                 CategoryId = request.CategoryId,
-                BrandId = request.BrandId
+                BrandId = request.BrandId,
+                ImageUrl = imageUrl
             };
 
             _db.Products.Add(product);
-            await _db.SaveChangesAsync();
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch
+            {
+                _images.Delete(imageUrl); // rollback the orphaned file
+                throw;
+            }
 
             return CreatedAtAction(nameof(GetById), new { id = product.Id }, ToDetail(product));
         }
@@ -125,7 +144,8 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    public async Task<IActionResult> Update(int id, UpdateProductRequest request)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Update(int id, [FromForm] UpdateProductFormRequest request)
     {
         try
         {
@@ -145,6 +165,18 @@ public class ProductsController : ControllerBase
                 return BadRequest(new { message = "Brand not found" });
             }
 
+            string? newImageUrl = null;
+            var oldImageUrl = product.ImageUrl;
+
+            if (request.Image is not null && request.Image.Length > 0)
+            {
+                try { _images.Validate(request.Image); }
+                catch (InvalidImageException ex) { return BadRequest(new { message = ex.Message }); }
+
+                newImageUrl = await _images.SaveAsync(request.Image);
+                product.ImageUrl = newImageUrl;
+            }
+
             product.Name = request.Name;
             product.Description = request.Description;
             product.Price = request.Price;
@@ -154,7 +186,19 @@ public class ProductsController : ControllerBase
             product.IsActive = request.IsActive;
             // CreatedAt is intentionally left unchanged.
 
-            await _db.SaveChangesAsync();
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch
+            {
+                if (newImageUrl is not null) _images.Delete(newImageUrl); // rollback the new file
+                throw;
+            }
+
+            // Only after a successful save, delete the replaced file.
+            if (newImageUrl is not null && !string.IsNullOrEmpty(oldImageUrl))
+                _images.Delete(oldImageUrl);
 
             return Ok(ToDetail(product));
         }
@@ -175,8 +219,13 @@ public class ProductsController : ControllerBase
                 return NotFound(new { message = "Product not found" });
             }
 
+            var imageUrl = product.ImageUrl;
+
             _db.Products.Remove(product);
             await _db.SaveChangesAsync();
+
+            // Remove the image file only after the row is gone (prevents orphaned files).
+            if (!string.IsNullOrEmpty(imageUrl)) _images.Delete(imageUrl);
 
             return NoContent();
         }
@@ -187,5 +236,5 @@ public class ProductsController : ControllerBase
     }
 
     private static ProductDetailDto ToDetail(Product p) =>
-        new(p.Id, p.Name, p.Description, p.Price, p.Stock, p.CategoryId, p.BrandId, p.IsActive, p.CreatedAt);
+        new(p.Id, p.Name, p.Description, p.Price, p.Stock, p.CategoryId, p.BrandId, p.IsActive, p.CreatedAt, p.ImageUrl);
 }

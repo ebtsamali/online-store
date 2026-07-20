@@ -9,6 +9,7 @@ public class Product
     public int Stock { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string ImageUrl { get; set; } = string.Empty;
 
     public int CategoryId { get; set; }
     public int BrandId { get; set; }

@@ -9,4 +9,5 @@ public record ProductDetailDto(
     int CategoryId,
     int BrandId,
     bool IsActive,
-    DateTime CreatedAt);
+    DateTime CreatedAt,
+    string ImageUrl);
