@@ -8,3 +8,4 @@ One row per feature folder under `.squad/plans/`. `NN` continues as a global exe
 | middleware | [middleware/00-overview.md](middleware/00-overview.md) | 03 |
 | products | [products/00-overview.md](products/00-overview.md) | 04, 06 |
 | cart | [cart/00-overview.md](cart/00-overview.md) | 05 |
+| orders | [orders/00-overview.md](orders/00-overview.md) | 07 |
