@@ -17,10 +17,10 @@ withDefaults(
 );
 
 const variants: Record<string, string> = {
-  primary: "bg-[#1b3a6b] text-white hover:bg-[#16305a] focus:ring-[#1b3a6b]",
+  primary: "bg-primary text-white hover:bg-primary-600 focus:ring-primary",
   secondary:
-    "bg-[#e8edf9] text-[#1b3a6b] hover:bg-[#dbe3f5] focus:ring-[#1b3a6b]",
-  ghost: "bg-transparent text-[#1b3a6b] hover:bg-[#f0f3fa] focus:ring-[#1b3a6b]",
+    "bg-primary-100 text-primary hover:bg-primary-200 focus:ring-primary",
+  ghost: "bg-transparent text-primary hover:bg-primary-50 focus:ring-primary",
 };
 </script>
 

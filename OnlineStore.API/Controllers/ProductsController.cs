@@ -26,6 +26,8 @@ public class ProductsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> List(
         [FromQuery] string? search,
+        [FromQuery] int? categoryId,
+        [FromQuery] int? brandId,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
@@ -40,6 +42,16 @@ public class ProductsController : ControllerBase
             if (!User.IsInRole("admin"))
             {
                 query = query.Where(p => p.IsActive);
+            }
+
+            if (categoryId.HasValue)
+            {
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+            }
+
+            if (brandId.HasValue)
+            {
+                query = query.Where(p => p.BrandId == brandId.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(search))

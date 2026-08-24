@@ -1,0 +1,12 @@
+version: 1
+project:
+  name: online-store-net-nuxt
+  primaryLanguage: typescript
+  projectRoots:
+    - .
+tracker:
+  type: none
+naming:
+  includeTrackerId: false
+  globalSequence: true
+agents: []
