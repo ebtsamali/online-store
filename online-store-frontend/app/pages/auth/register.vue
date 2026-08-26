@@ -2,7 +2,7 @@
 import { toast } from "vue-sonner";
 import { registerSchema, fieldErrors } from "~/utils/validation";
 
-definePageMeta({ layout: false });
+definePageMeta({ layout: false, middleware: "guest" });
 
 const apiBase = useApi();
 

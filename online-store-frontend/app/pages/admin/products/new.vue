@@ -20,6 +20,16 @@ const imageError = ref("");
 const errors = ref<Record<string, string>>({});
 const loading = ref(false);
 
+const { data: categories, error: categoriesError } = useCategories();
+const { data: brands, error: brandsError } = useBrands();
+
+const categoryOptions = computed(
+  () => categories.value?.map((c) => ({ value: String(c.id), label: c.name })) ?? [],
+);
+const brandOptions = computed(
+  () => brands.value?.map((b) => ({ value: String(b.id), label: b.name })) ?? [],
+);
+
 const ALLOWED_EXT = [".jpg", ".jpeg", ".png", ".webp"];
 const MAX_BYTES = 5 * 1024 * 1024;
 
@@ -107,18 +117,23 @@ async function onSubmit() {
         :error="errors.price"
       />
       <BaseInput v-model="form.stock" type="number" label="Stock" :error="errors.stock" />
-      <BaseInput
+      <BaseSelect
         v-model="form.categoryId"
-        type="number"
-        label="Category ID"
+        label="Category"
+        placeholder="Select a category"
+        :options="categoryOptions"
         :error="errors.categoryId"
       />
-      <BaseInput
+      <p v-if="categoriesError" class="text-xs text-red-600">Could not load categories.</p>
+
+      <BaseSelect
         v-model="form.brandId"
-        type="number"
-        label="Brand ID"
+        label="Brand"
+        placeholder="Select a brand"
+        :options="brandOptions"
         :error="errors.brandId"
       />
+      <p v-if="brandsError" class="text-xs text-red-600">Could not load brands.</p>
 
       <div class="space-y-1.5">
         <label class="block text-sm font-medium text-gray-700">Image</label>

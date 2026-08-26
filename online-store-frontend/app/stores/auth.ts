@@ -39,13 +39,14 @@ export const useAuthStore = defineStore("auth", {
     },
 
     logout() {
+      const wasAdmin = this.isAdmin;
       this.token = null;
       this.user = null;
       authCookie().value = null;
       if (import.meta.client) {
         localStorage.removeItem("auth");
       }
-      return navigateTo("/auth/login");
+      return navigateTo(wasAdmin ? "/admin/login" : "/auth/login");
     },
 
     // Runs on server (cookie) and client (cookie, then localStorage fallback).

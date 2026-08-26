@@ -29,11 +29,15 @@ async function onSubmit() {
       role: string;
     }>(`${apiBase}/auth/login`, { method: "POST", body: parsed.data });
 
+    if (res.role !== "admin") {
+      toast.error("This sign-in is for admins only.");
+      return;
+    }
+
     auth.login(res.token, { name: res.name, email: res.email, role: res.role });
     toast.success(`Welcome back, ${res.name}`);
-    await navigateTo("/");
+    await navigateTo("/admin/dashboard");
   } catch (e: any) {
-    // Backend returns a generic 401 "Invalid email or password".
     toast.error(e?.data?.message ?? "Invalid email or password");
   } finally {
     loading.value = false;
@@ -54,7 +58,8 @@ async function onSubmit() {
         </NuxtLink>
       </div>
 
-      <h1 class="mt-2 text-center text-3xl font-bold text-[#1b3a6b]">Log in</h1>
+      <h1 class="mt-2 text-center text-3xl font-bold text-[#1b3a6b]">Admin sign in</h1>
+      <p class="mt-1 text-center text-sm text-[#8a94a6]">Staff access only</p>
 
       <BaseForm class="mt-8" @submit="onSubmit">
         <BaseInput
@@ -73,22 +78,15 @@ async function onSubmit() {
           autocomplete="current-password"
           placeholder="••••••••"
           :error="errors.password"
-        >
-          <template #label-aside>
-            <span class="text-xs text-[#8a94a6]">Forgot password?</span>
-          </template>
-        </BaseInput>
+        />
 
         <BaseButton type="submit" block :loading="loading">
-          {{ loading ? "Signing in…" : "Log in" }}
+          {{ loading ? "Signing in…" : "Sign in" }}
         </BaseButton>
       </BaseForm>
 
       <p class="mt-6 text-center text-sm text-[#8a94a6]">
-        No account?
-        <NuxtLink to="/auth/register" class="font-semibold text-[#1b3a6b]">
-          Register
-        </NuxtLink>
+        <NuxtLink to="/" class="font-semibold text-[#1b3a6b]">Back to store</NuxtLink>
       </p>
     </div>
   </div>
