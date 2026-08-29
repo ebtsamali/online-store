@@ -8,6 +8,11 @@ public class Order
     public decimal Total { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    public string ShippingName { get; set; } = string.Empty;
+    public string ShippingRegion { get; set; } = string.Empty;
+    public string ShippingCity { get; set; } = string.Empty;
+    public string ShippingPhone { get; set; } = string.Empty;
+
     public User? User { get; set; }
     public List<OrderItem> Items { get; set; } = new();
 }

@@ -21,10 +21,18 @@ public class OrdersController : ControllerBase
     }
 
     [HttpPost("checkout")]
-    public async Task<IActionResult> Checkout()
+    public async Task<IActionResult> Checkout([FromBody] CheckoutRequest request)
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(request.ShippingName) ||
+                string.IsNullOrWhiteSpace(request.ShippingRegion) ||
+                string.IsNullOrWhiteSpace(request.ShippingCity) ||
+                string.IsNullOrWhiteSpace(request.ShippingPhone))
+            {
+                return BadRequest(new { message = "All shipping fields are required" });
+            }
+
             var userId = GetUserId();
             if (userId is null)
             {
@@ -63,6 +71,10 @@ public class OrdersController : ControllerBase
             {
                 UserId = userId.Value,
                 Status = "pending",
+                ShippingName = request.ShippingName.Trim(),
+                ShippingRegion = request.ShippingRegion.Trim(),
+                ShippingCity = request.ShippingCity.Trim(),
+                ShippingPhone = request.ShippingPhone.Trim(),
                 Items = cartItems.Select(ci => new OrderItem
                 {
                     ProductId = ci.ProductId,
@@ -176,5 +188,9 @@ public class OrdersController : ControllerBase
                     i.UnitPrice,
                     i.Quantity,
                     i.UnitPrice * i.Quantity))
-                .ToList());
+                .ToList(),
+            order.ShippingName,
+            order.ShippingRegion,
+            order.ShippingCity,
+            order.ShippingPhone);
 }

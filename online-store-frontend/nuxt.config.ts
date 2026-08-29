@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   css: ["vue-sonner/style.css"],
   runtimeConfig: {
     public: {
-      apiBase: "https://localhost:7225/api",
+      apiBase: "http://localhost:5016/api",
     },
   },
 });

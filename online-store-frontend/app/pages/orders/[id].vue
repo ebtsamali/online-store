@@ -78,6 +78,17 @@ function formatDate(value: string): string {
         <p class="mt-1 text-sm text-gray-500">{{ formatDate(order.createdAt) }}</p>
       </div>
 
+      <!-- Shipping info -->
+      <div class="rounded-lg border border-gray-200 p-4">
+        <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Shipping Address</h2>
+        <div class="space-y-1 text-sm text-gray-700">
+          <p><span class="font-medium">Name:</span> {{ order.shippingName }}</p>
+          <p><span class="font-medium">Region:</span> {{ order.shippingRegion }}</p>
+          <p><span class="font-medium">City:</span> {{ order.shippingCity }}</p>
+          <p><span class="font-medium">Phone:</span> {{ order.shippingPhone }}</p>
+        </div>
+      </div>
+
       <div class="space-y-4">
         <div
           v-for="item in order.items"

@@ -19,6 +19,10 @@ export interface OrderDetail {
   total: number;
   createdAt: string;
   items: OrderItem[];
+  shippingName: string;
+  shippingRegion: string;
+  shippingCity: string;
+  shippingPhone: string;
 }
 
 export const useOrders = () => {
